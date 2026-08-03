@@ -1,0 +1,33 @@
+# ============================================
+# 公共配置（所有环境共享）
+# 默认激活 dev 环境，本地启动无需额外参数
+# 生产部署: java -jar app.jar --spring.profiles.active=prod
+# ============================================
+spring:
+  profiles:
+    active: dev
+
+  application:
+    name: mytools
+
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+
+server:
+  port: 5173
+  servlet:
+    session:
+      timeout: 30m
+
+# MyBatis-Plus 全局配置
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: null
+      logic-delete-value: null
+      logic-not-delete-value: null

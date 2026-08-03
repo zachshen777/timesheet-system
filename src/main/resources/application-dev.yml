@@ -1,0 +1,21 @@
+# ============================================
+# 本地开发环境 (dev)
+# 数据库: WSL Docker — MariaDB 11.4
+# ============================================
+spring:
+  datasource:
+    url: jdbc:mariadb://localhost:3306/mytools?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    driver-class-name: org.mariadb.jdbc.Driver
+    username: root
+    password: Admin@123456
+    hikari:
+      maximum-pool-size: 3
+      minimum-idle: 1
+      connection-timeout: 10000
+      idle-timeout: 300000
+      max-lifetime: 600000
+
+# 开发环境输出 SQL（方便调试）
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

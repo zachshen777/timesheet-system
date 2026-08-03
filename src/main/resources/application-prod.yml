@@ -1,0 +1,21 @@
+# ============================================
+# 生产环境 (prod)
+# 部署命令: java -jar mytools.jar --spring.profiles.active=prod
+# ============================================
+spring:
+  datasource:
+    url: jdbc:mariadb://101.33.68.206:3306/mytools?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    driver-class-name: org.mariadb.jdbc.Driver
+    username: mytools
+    password: fWZMc2nRFp465DG2
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 3
+      connection-timeout: 15000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+# 生产环境关闭 SQL 日志
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
