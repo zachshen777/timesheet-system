@@ -16,7 +16,7 @@ spring:
       schema-locations: classpath:schema.sql
 
 server:
-  port: 5173
+  port: 8080
   servlet:
     session:
       timeout: 30m
