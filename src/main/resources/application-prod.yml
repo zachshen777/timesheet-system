@@ -4,10 +4,10 @@
 # ============================================
 spring:
   datasource:
-    url: jdbc:mariadb://101.33.68.206:3306/mytools?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    url: jdbc:mariadb://${生产地址ip}:3306/mytools?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
     driver-class-name: org.mariadb.jdbc.Driver
-    username: mytools
-    password: fWZMc2nRFp465DG2
+    username: ${用户名}
+    password: ${密码}
     hikari:
       maximum-pool-size: 10
       minimum-idle: 3
