@@ -148,3 +148,25 @@ UPDATE employee SET department = 'production'  WHERE department = '生产';
 UPDATE employee SET department = 'quality'     WHERE department = '品保';
 UPDATE employee SET department = 'precision'   WHERE department = '精度';
 
+-- ============================================================
+-- 操作日志表（广播日志）
+-- ============================================================
+CREATE TABLE IF NOT EXISTS operation_log
+(
+    id          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    emp_id      BIGINT       NOT NULL COMMENT '操作员工ID(关联employee.id)',
+    emp_name    VARCHAR(50)  NOT NULL COMMENT '操作员工姓名',
+    operation   VARCHAR(30)  NOT NULL COMMENT '操作类型: CREATE/UPDATE/DELETE/BATCH_CREATE/BATCH_DELETE',
+    target_type VARCHAR(30)  NOT NULL COMMENT '目标类型: TIMESHEET',
+    target_id   BIGINT                COMMENT '目标记录ID',
+    target_date DATE                  COMMENT '目标日期(工时填报日期)',
+    detail      VARCHAR(500)          COMMENT '操作详情描述',
+    created_at  DATETIME     NOT NULL COMMENT '操作时间',
+    PRIMARY KEY (id),
+    KEY idx_created_at (created_at),
+    KEY idx_emp_id (emp_id)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  COMMENT = '操作日志表（广播日志）';
+

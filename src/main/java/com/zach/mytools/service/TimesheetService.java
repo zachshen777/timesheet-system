@@ -8,6 +8,7 @@ import com.zach.mytools.mapper.TimesheetRecordMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,9 +21,11 @@ import java.util.List;
 public class TimesheetService {
 
     private final TimesheetRecordMapper mapper;
+    private final OperationLogService operationLogService;
 
-    public TimesheetService(TimesheetRecordMapper mapper) {
+    public TimesheetService(TimesheetRecordMapper mapper, OperationLogService operationLogService) {
         this.mapper = mapper;
+        this.operationLogService = operationLogService;
     }
 
     /**
@@ -77,8 +80,10 @@ public class TimesheetService {
 
         if (isNew) {
             mapper.insert(record);
+            logBroadcast(employee, "CREATE", record);
         } else {
             mapper.updateById(record);
+            logBroadcast(employee, "UPDATE", record);
         }
         return record;
     }
@@ -110,7 +115,11 @@ public class TimesheetService {
      * 删除某员工指定日期的工时记录
      */
     public void deleteByDate(Employee employee, LocalDate date) {
+        TimesheetRecord record = mapper.findByDateAndEmpId(date, employee.getId());
+        String detail = buildDetail(record);
         mapper.deleteByDateAndEmpId(date, employee.getId());
+        operationLogService.log(employee, "DELETE", "TIMESHEET",
+                record != null ? record.getId() : null, date, detail);
     }
 
     /**
@@ -118,7 +127,39 @@ public class TimesheetService {
      */
     public void batchDeleteByDates(Employee employee, List<LocalDate> dates) {
         for (LocalDate date : dates) {
-            mapper.deleteByDateAndEmpId(date, employee.getId());
+            deleteByDate(employee, date);
+        }
+    }
+
+    /**
+     * 构建操作详情描述
+     */
+    private String buildDetail(TimesheetRecord record) {
+        if (record == null) return "未知记录";
+        BigDecimal total = BigDecimal.ZERO;
+        if (record.getWorkHours() != null) total = total.add(record.getWorkHours());
+        if (record.getOvertimeHours() != null) total = total.add(record.getOvertimeHours());
+        StringBuilder sb = new StringBuilder();
+        sb.append(record.getDate()).append(" ");
+        if (record.getProject() != null && !record.getProject().isEmpty()) {
+            sb.append(record.getProject());
+        }
+        sb.append(" ").append(total.stripTrailingZeros().toPlainString()).append("h");
+        if (record.getTask() != null && !record.getTask().isEmpty()) {
+            sb.append(" | ").append(record.getTask());
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 记录广播日志
+     */
+    private void logBroadcast(Employee employee, String operation, TimesheetRecord record) {
+        try {
+            operationLogService.log(employee, operation, "TIMESHEET",
+                    record.getId(), record.getDate(), buildDetail(record));
+        } catch (Exception e) {
+            log.warn("广播日志记录失败: {}", e.getMessage());
         }
     }
 }
