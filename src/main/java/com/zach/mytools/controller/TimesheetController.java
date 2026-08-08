@@ -54,6 +54,24 @@ public class TimesheetController {
     }
 
     /**
+     * 查询当年工时记录（用于热力图）
+     * GET /api/timesheet/year?year=2026
+     */
+    @GetMapping("/year")
+    public ApiResponse<Map<String, TimesheetDTO>> getYearRecords(
+            @RequestParam int year,
+            HttpSession session) {
+        Employee employee = authService.getCurrentEmployee(session);
+        List<TimesheetRecord> records = timesheetService.getYearRecords(employee, year);
+        Map<String, TimesheetDTO> map = records.stream()
+                .collect(Collectors.toMap(
+                        r -> r.getDate().toString(),
+                        this::toDTO
+                ));
+        return ApiResponse.success(map);
+    }
+
+    /**
      * 查询指定日期的工时记录
      * GET /api/timesheet/date/{date}
      */

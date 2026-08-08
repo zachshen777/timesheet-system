@@ -35,6 +35,15 @@ public class TimesheetService {
     }
 
     /**
+     * 查询某员工整年的工时记录（用于热力图）
+     */
+    public List<TimesheetRecord> getYearRecords(Employee employee, int year) {
+        LocalDate startDate = LocalDate.of(year, 1, 1);
+        LocalDate endDate = LocalDate.of(year, 12, 31);
+        return mapper.findByEmpIdAndDateRange(employee.getId(), startDate, endDate);
+    }
+
+    /**
      * 查询某员工指定日期的工时记录
      */
     public TimesheetRecord getByDate(Employee employee, LocalDate date) {
