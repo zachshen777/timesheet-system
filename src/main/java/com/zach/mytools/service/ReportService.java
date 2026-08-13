@@ -73,10 +73,12 @@ public class ReportService {
                     summaries.add(ps);
                 });
 
-        // 构建明细列表
+        // 构建明细列表（按日期倒序，同一天按创建时间倒序）
         List<TimesheetDTO> details = records.stream()
                 .filter(r -> r.getWorkHours() != null || r.getOvertimeHours() != null)
-                .sorted(Comparator.comparing(TimesheetRecord::getDate))
+                .sorted(Comparator
+                        .comparing(TimesheetRecord::getDate, Comparator.reverseOrder())
+                        .thenComparing(TimesheetRecord::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
                 .map(this::toDTO)
                 .collect(Collectors.toList());
 
