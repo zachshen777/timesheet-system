@@ -19,6 +19,10 @@ public class SystemConfig {
     @TableField("holidays")
     private String holidays;
 
+    /** 下班时间（HH:mm，供前端下班倒计时悬浮球使用，默认 17:00） */
+    @TableField("off_work_time")
+    private String offWorkTime;
+
     /** 最后修改人 */
     @TableField("updated_by")
     private String updatedBy;

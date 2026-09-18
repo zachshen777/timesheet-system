@@ -4,6 +4,7 @@ import com.zach.mytools.dto.ApiResponse;
 import com.zach.mytools.dto.ConfigDTO;
 import com.zach.mytools.dto.ConfigRequest;
 import com.zach.mytools.dto.HolidayItem;
+import com.zach.mytools.dto.OffWorkTimeRequest;
 import com.zach.mytools.entity.SystemConfig;
 import com.zach.mytools.entity.Employee;
 import com.zach.mytools.service.AuthService;
@@ -56,9 +57,28 @@ public class SystemConfigController {
         return ApiResponse.success("配置更新成功", toDTO(config, holidays));
     }
 
+    /**
+     * 更新下班时间（供前端下班倒计时悬浮球使用）
+     * PUT /api/admin/config/off-work-time
+     * Body: { "offWorkTime": "17:00" }
+     */
+    @PutMapping("/off-work-time")
+    public ApiResponse<ConfigDTO> updateOffWorkTime(@RequestBody OffWorkTimeRequest request, HttpSession session) {
+        Employee employee = authService.getCurrentEmployee(session);
+        try {
+            SystemConfig config = configService.saveOffWorkTime(request.getOffWorkTime(), employee.getUsername());
+            log.info("下班时间更新: {}, 操作人: {}", request.getOffWorkTime(), employee.getUsername());
+            List<HolidayItem> holidays = configService.getHolidays();
+            return ApiResponse.success("下班时间更新成功", toDTO(config, holidays));
+        } catch (IllegalArgumentException e) {
+            return ApiResponse.error(400, e.getMessage());
+        }
+    }
+
     private ConfigDTO toDTO(SystemConfig config, List<HolidayItem> holidays) {
         ConfigDTO dto = new ConfigDTO();
         dto.setHolidays(holidays);
+        dto.setOffWorkTime(configService.getOffWorkTime());
         dto.setUpdatedBy(config.getUpdatedBy());
         return dto;
     }

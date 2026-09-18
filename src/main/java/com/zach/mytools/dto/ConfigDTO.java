@@ -13,6 +13,9 @@ public class ConfigDTO {
     /** 节假日列表 */
     private List<HolidayItem> holidays;
 
+    /** 下班时间（HH:mm） */
+    private String offWorkTime;
+
     /** 最后修改人 */
     private String updatedBy;
 }

@@ -20,6 +20,9 @@ import java.util.List;
 @Service
 public class SystemConfigService {
 
+    /** 下班时间默认值（HH:mm） */
+    public static final String DEFAULT_OFF_WORK_TIME = "17:00";
+
     private final SystemConfigMapper configMapper;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -38,6 +41,7 @@ public class SystemConfigService {
             config = new SystemConfig();
             config.setId(1L);
             config.setHolidays("[]");
+            config.setOffWorkTime(DEFAULT_OFF_WORK_TIME);
         }
         return config;
     }
@@ -76,6 +80,48 @@ public class SystemConfigService {
             configMapper.updateById(config);
         }
         return config;
+    }
+
+    // ==================== 下班时间配置 ====================
+
+    /**
+     * 获取下班时间（HH:mm），空值/非法值回退默认 17:00
+     */
+    public String getOffWorkTime() {
+        String v = getConfig().getOffWorkTime();
+        return isValidTime(v) ? v : DEFAULT_OFF_WORK_TIME;
+    }
+
+    /**
+     * 更新下班时间（HH:mm），非法格式抛出异常
+     */
+    public SystemConfig saveOffWorkTime(String offWorkTime, String updatedBy) {
+        String v = (offWorkTime == null) ? "" : offWorkTime.trim();
+        if (!isValidTime(v)) {
+            throw new IllegalArgumentException("下班时间格式错误，应为 HH:mm（如 17:00）");
+        }
+
+        SystemConfig config = configMapper.selectById(1L);
+        boolean isNew = (config == null);
+        if (isNew) {
+            config = new SystemConfig();
+            config.setId(1L);
+            config.setHolidays("[]");
+        }
+        config.setOffWorkTime(v);
+        config.setUpdatedBy(updatedBy);
+
+        if (isNew) {
+            configMapper.insert(config);
+        } else {
+            configMapper.updateById(config);
+        }
+        return config;
+    }
+
+    /** 校验 HH:mm 格式（00:00 ~ 23:59） */
+    private boolean isValidTime(String v) {
+        return v != null && v.matches("^([01]\\d|2[0-3]):[0-5]\\d$");
     }
 
     /**

@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS system_config
 (
     id               BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     holidays         TEXT                  DEFAULT NULL COMMENT '节假日配置(JSON数组：[{name,startDate,endDate}])',
+    off_work_time    VARCHAR(5)            DEFAULT '17:00' COMMENT '下班时间(HH:mm，供下班倒计时悬浮球使用)',
     updated_by       VARCHAR(50)           DEFAULT NULL COMMENT '最后修改人',
     created_at       DATETIME              DEFAULT NULL COMMENT '创建时间',
     updated_at       DATETIME              DEFAULT NULL COMMENT '更新时间',
@@ -52,6 +53,8 @@ ALTER TABLE system_config DROP COLUMN IF EXISTS overtime_time;
 -- 2. 新增节假日配置字段（JSON 文本）
 -- 格式：[{"name":"春节","type":"holiday","startDate":"2026-02-16","endDate":"2026-02-22"},{"name":"五一调班","type":"shift","startDate":"2026-04-26","endDate":"2026-04-26"}]
 ALTER TABLE system_config ADD COLUMN IF NOT EXISTS holidays TEXT DEFAULT NULL COMMENT '节假日/调班配置(JSON，type=holiday|shift)' AFTER id;
+-- 3. 新增下班时间字段（下班倒计时悬浮球使用，默认 17:00）
+ALTER TABLE system_config ADD COLUMN IF NOT EXISTS off_work_time VARCHAR(5) DEFAULT '17:00' COMMENT '下班时间(HH:mm)' AFTER holidays;
 -- ============================================================
 -- 工时填报记录表
 -- ============================================================
