@@ -31,3 +31,13 @@ mybatis-plus:
       logic-delete-field: null
       logic-delete-value: null
       logic-not-delete-value: null
+
+# ============================================
+# 自定义定时任务模块（管理员在「系统设置 → 定时任务」维护）
+# ============================================
+mytools:
+  job:
+    # 调度线程池大小：同时最多并行执行多少个任务
+    pool-size: 5
+    # 固定间隔模式允许的最小间隔（秒），防止配置过密把资源打满
+    min-interval-seconds: 5

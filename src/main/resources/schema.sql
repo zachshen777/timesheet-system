@@ -173,3 +173,58 @@ CREATE TABLE IF NOT EXISTS operation_log
   COLLATE = utf8mb4_unicode_ci
   COMMENT = '操作日志表（广播日志）';
 
+-- ============================================================
+-- 定时任务配置表（管理员可自定义任务，改动实时生效，无需重启服务）
+-- ============================================================
+CREATE TABLE IF NOT EXISTS sys_job
+(
+    id              BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    job_name        VARCHAR(100) NOT NULL COMMENT '任务名称',
+    description     VARCHAR(500)          DEFAULT NULL COMMENT '任务描述',
+    exec_type       VARCHAR(20)  NOT NULL DEFAULT 'CRON' COMMENT '执行类型：CRON-cron表达式 FIXED_RATE-固定间隔',
+    cron_expression VARCHAR(100)          DEFAULT NULL COMMENT 'cron表达式(6位：秒 分 时 日 月 周)，exec_type=CRON 时必填',
+    fixed_interval  BIGINT                DEFAULT NULL COMMENT '固定间隔时长(秒)，exec_type=FIXED_RATE 时必填',
+    class_name      VARCHAR(255) NOT NULL COMMENT '执行的Java类全限定名',
+    status          TINYINT               DEFAULT 0 COMMENT '状态：1启用 0禁用',
+    remark          VARCHAR(200)          DEFAULT NULL COMMENT '备注',
+    created_by      VARCHAR(50)           DEFAULT NULL COMMENT '创建人',
+    created_at      DATETIME              DEFAULT NULL COMMENT '创建时间',
+    updated_at      DATETIME              DEFAULT NULL COMMENT '更新时间',
+    PRIMARY KEY (id),
+    KEY idx_status (status)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  COMMENT = '定时任务配置表';
+
+-- ============================================================
+-- 定时任务执行日志表
+-- ============================================================
+CREATE TABLE IF NOT EXISTS sys_job_log
+(
+    id           BIGINT      NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    job_id       BIGINT      NOT NULL COMMENT '任务ID(关联sys_job.id)',
+    job_name     VARCHAR(100)         DEFAULT NULL COMMENT '任务名称(冗余，任务删除后日志仍可读)',
+    class_name   VARCHAR(255)         DEFAULT NULL COMMENT '执行类全限定名(冗余)',
+    trigger_type VARCHAR(20)          DEFAULT NULL COMMENT '触发方式：CRON-定时 FIXED_RATE-固定间隔 MANUAL-手动触发',
+    start_time   DATETIME    NOT NULL COMMENT '任务开始时间',
+    end_time     DATETIME             DEFAULT NULL COMMENT '任务结束时间',
+    cost_ms      BIGINT               DEFAULT NULL COMMENT '耗时(毫秒)',
+    status       VARCHAR(20) NOT NULL COMMENT '执行状态：SUCCESS-成功 FAILED-失败 SKIPPED-跳过(上次未执行完)',
+    error_msg    TEXT                 DEFAULT NULL COMMENT '异常信息(失败时的堆栈)',
+    created_at   DATETIME             DEFAULT NULL COMMENT '创建时间',
+    PRIMARY KEY (id),
+    KEY idx_job_id (job_id),
+    KEY idx_start_time (start_time)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  COMMENT = '定时任务执行日志表';
+
+-- 种子数据：示例任务（默认禁用，管理员启用后即可试用，可随时删除）
+INSERT IGNORE INTO sys_job (id, job_name, description, exec_type, cron_expression, class_name, status, remark, created_by)
+VALUES (1, '示例任务-系统心跳', '每隔5分钟打印一行心跳与JVM内存占用，用于验证调度链路是否正常',
+        'CRON', '0 0/5 * * * ?', 'com.zach.mytools.job.task.HeartbeatLogJob', 0,
+        '开箱示例：默认禁用，启用后可在「执行日志」看到记录；确认无需后可删除', 'system');
+
+
